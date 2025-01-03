@@ -55,6 +55,11 @@ export const abstractionsRoutes = [
     component: () => import('../../pages/abstractions/EdgesDemo.vue'),
   },
   {
+    path: '/abstractions/conditional-lines',
+    name: 'Conditional Lines',
+    component: () => import('../../pages/abstractions/ConditionalLinesDemo.vue'),
+  },
+  {
     path: '/abstractions/positional-audio',
     name: 'PositionalAudio',
     component: () => import('../../pages/abstractions/PositionalAudioDemo.vue'),

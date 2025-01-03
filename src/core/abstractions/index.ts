@@ -19,6 +19,7 @@ import Fbo from './useFBO/component.vue'
 import Sampler from './useSurfaceSampler/component.vue'
 import ScreenSizer from './ScreenSizer.vue'
 import Edges from './Edges.vue'
+import ConditionalLines from './ConditionalLines/index.vue'
 
 export * from '../staging/useEnvironment'
 export * from './useFBO/'
@@ -26,6 +27,7 @@ export * from './useSurfaceSampler'
 export {
   AnimatedSprite,
   Billboard,
+  ConditionalLines,
   CubeCamera,
   Edges,
   Fbo,

@@ -76,6 +76,7 @@ export default defineConfig({
           { text: 'useSurfaceSampler', link: '/guide/abstractions/use-surface-sampler' },
           { text: 'Sampler', link: '/guide/abstractions/sampler' },
           /* { text: 'Edges', link: '/guide/abstractions/edges' }, */
+          { text: 'ConditionalLines', link: '/guide/abstractions/ConditionalLines' },
           { text: 'PositionalAudio', link: '/guide/abstractions/positional-audio' },
           { text: 'AnimatedSprite', link: '/guide/abstractions/animated-sprite' },
           /*           { text: 'Mask', link: '/guide/abstractions/mask' },
