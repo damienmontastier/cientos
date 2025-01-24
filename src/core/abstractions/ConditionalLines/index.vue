@@ -2,7 +2,7 @@
 import { ref, shallowRef, toRefs, watch } from 'vue'
 import type { BufferGeometry, LineSegments } from 'three'
 import { EdgesGeometry } from 'three'
-import type { TresColor } from '@tresjs/core'
+import type { TresColor, TresGroup } from '@tresjs/core'
 
 export interface EdgesProps {
   color?: TresColor
@@ -16,46 +16,64 @@ const props = withDefaults(defineProps<EdgesProps>(), {
 
 const { color, threshold } = toRefs(props)
 
-const lineSegmentsRef = shallowRef<LineSegments>()
-const saveGeometry = ref<BufferGeometry | null>(null)
-const saveThreshold = ref<number>(1)
+const mainGroupRef = shallowRef<TresGroup>(null)
+const meshes = ref<THREE.Mesh[]>([])
 
 defineExpose({
-  instance: lineSegmentsRef,
+  instance: mainGroupRef,
 })
 
-// Watch for changes in lineSegments, thresholdAngle, and color.
+watch(mainGroupRef, (group) => {
+  if (!mainGroupRef.value) { return }
+
+  console.log('mainGroupRef', mainGroupRef.value.parent)
+
+  mainGroupRef.value.traverse((child) => {
+    if (child.isMesh) {
+      meshes.value.push(child as THREE.Mesh)
+    }
+  })
+})
+
 watch(
-  () => [lineSegmentsRef.value, threshold.value],
+  () => [meshes.value, threshold.value],
   () => {
-    if (lineSegmentsRef.value) {
-      const parent = lineSegmentsRef.value.parent
+    meshes.value.forEach((mesh) => {
+      const parent = mesh.parent
 
       if (parent) {
-        const geometry = parent.geometry
+        const geometry = mesh.geometry
 
-        // Update geometry and threshold if necessary.
-        if (
-          geometry !== saveGeometry.value || threshold.value !== saveThreshold.value
-        ) {
-          saveGeometry.value = geometry
-          saveThreshold.value = threshold.value
+        const lineGeom = new EdgesGeometry(geometry, threshold.value)
+        const line = new LineSegments(lineGeom, new THREE.LineBasicMaterial({ color: props.color }))
+        line.position.copy(mesh.position)
+        line.scale.copy(mesh.scale)
+        line.rotation.copy(mesh.rotation)
 
-          lineSegmentsRef.value.geometry = new EdgesGeometry(geometry, threshold.value)
-        }
+        const thickLineGeom = new LineSegmentsGeometry().fromEdgesGeometry(lineGeom)
+        const thickLines = new LineSegments2(thickLineGeom, new LineMaterial({ color: props.color, linewidth: 3 }))
+        thickLines.position.copy(mesh.position)
+        thickLines.scale.copy(mesh.scale)
+        thickLines.rotation.copy(mesh.rotation)
+
+        parent.remove(mesh)
+        parent.add(line)
+        parent.add(thickLines)
       }
-    }
+    })
   },
 )
 </script>
 
 <template>
-  <TresLineSegments
-    ref="lineSegmentsRef"
+  <TresGroup
+    ref="mainGroupRef"
     v-bind="$attrs"
   >
-    <slot>
-      <TresLineBasicMaterial :color="color" />
-    </slot>
-  </TresLineSegments>
+    <template v-for="mesh in meshes" :key="mesh.uuid">
+      <TresEdgesGeometry :geometry="mesh.geometry" :threshold="props.threshold">
+        <TresLineSegments :geometry="mesh.geometry" :material="new THREE.LineBasicMaterial({ color: props.color })" />
+      </TresEdgesGeometry>
+    </template>
+  </TresGroup>
 </template>
